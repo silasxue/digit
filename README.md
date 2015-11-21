@@ -6,7 +6,7 @@
 * run solve.sh to train *digital model*  
 
 ####to test:
-* download pre-trained [model]() or train your own model as metioned above.
+* download pre-trained [model](http://7xocv2.dl1.z0.glb.clouddn.com/digit_iter_5000.caffemodel) or train your own model as metioned above.
 * run `demo.m`(need Matlab and matcaffe)
 * python bindings are on the go.
 
