@@ -1,7 +1,9 @@
+#include <cfloat>
 #include <vector>
 
-#include "caffe/common_layers.hpp"
+#include "caffe/layer.hpp"
 #include "caffe/util/math_functions.hpp"
+#include "caffe/vision_layers.hpp"
 
 namespace caffe {
 
@@ -33,6 +35,8 @@ void ReductionLayer<Dtype>::Forward_gpu(
     bottom_data += dim_;
     ++top_data;
   }
+  if(isnan(bottom[0]->asum_data()))LOG(WARNING)<<"RELU BOTTOM NAN!";
+  if(isnan(top[0]->asum_data()))LOG(WARNING)<<"RELU TOP NAN!";
   if (coeff_ != Dtype(1)) {
     // Reset the top_data pointer.
     top_data = top[0]->mutable_gpu_data();

@@ -4,6 +4,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+
 #include "hdf5.h"
 
 #include "caffe/blob.hpp"
@@ -16,9 +17,6 @@
 #include "caffe/proto/caffe.pb.h"
 #include "caffe/util/blocking_queue.hpp"
 #include "caffe/util/db.hpp"
-
-#define HDF5_DATA_DATASET_NAME "data"
-#define HDF5_DATA_LABEL_NAME "label"
 
 namespace caffe {
 
@@ -51,7 +49,7 @@ class BaseDataLayer : public Layer<Dtype> {
 
  protected:
   TransformationParameter transform_param_;
-  shared_ptr<DataTransformer<Dtype> > data_transformer_;
+  shared_ptr < DataTransformer<Dtype> > data_transformer_;
   bool output_labels_;
 };
 
@@ -59,6 +57,12 @@ template <typename Dtype>
 class Batch {
  public:
   Blob<Dtype> data_, label_;
+};
+
+template <typename Dtype>
+class LabelmapBatch {
+ public:
+  Blob<Dtype> data_, labelmap_;
 };
 
 template <typename Dtype>
@@ -89,6 +93,37 @@ class BasePrefetchingDataLayer :
   BlockingQueue<Batch<Dtype>*> prefetch_full_;
 
   Blob<Dtype> transformed_data_;
+};
+
+template <typename Dtype>
+class BasePrefetchingLabelmapDataLayer :
+    public BaseDataLayer<Dtype>, public InternalThread {
+ public:
+  explicit BasePrefetchingLabelmapDataLayer(const LayerParameter& param);
+  // LayerSetUp: implements common data layer setup functionality, and calls
+  // DataLayerSetUp to do special data layer setup for individual layer types.
+  // This method may not be overridden.
+  void LayerSetUp(const vector<Blob<Dtype>*>& bottom,
+      const vector<Blob<Dtype>*>& top);
+
+  virtual void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
+      const vector<Blob<Dtype>*>& top);
+  virtual void Forward_gpu(const vector<Blob<Dtype>*>& bottom,
+      const vector<Blob<Dtype>*>& top);
+
+  // Prefetches batches (asynchronously if to GPU memory)
+  static const int PREFETCH_COUNT = 3;
+
+ protected:
+  virtual void InternalThreadEntry();
+  virtual void load_batch(LabelmapBatch<Dtype>* labelmapbatch) = 0;
+
+  LabelmapBatch<Dtype> prefetch_[PREFETCH_COUNT];
+  BlockingQueue<LabelmapBatch<Dtype>*> prefetch_free_;
+  BlockingQueue<LabelmapBatch<Dtype>*> prefetch_full_;
+
+  Blob<Dtype> transformed_data_;
+  Blob<Dtype> transformed_labelmap_;
 };
 
 template <typename Dtype>
@@ -260,6 +295,53 @@ class ImageDataLayer : public BasePrefetchingDataLayer<Dtype> {
 };
 
 /**
+ * @brief Provides data to the Net from image groundtruth pairs.
+ *
+ * TODO(dox): thorough documentation for Forward and proto params.
+ */
+template <typename Dtype>
+class ImageLabelmapDataLayer : public BasePrefetchingLabelmapDataLayer<Dtype> {
+ public:
+  explicit ImageLabelmapDataLayer(const LayerParameter& param)
+      : BasePrefetchingLabelmapDataLayer<Dtype>(param) {}
+  virtual ~ImageLabelmapDataLayer();
+  virtual void DataLayerSetUp(const vector<Blob<Dtype>*>& bottom,
+      const vector<Blob<Dtype>*>& top);
+
+  virtual inline const char* type() const { return "ImageLabelmapData"; }
+  virtual inline int ExactNumBottomBlobs() const { return 0; }
+  virtual inline int ExactNumTopBlobs() const { return 2; } //could be three if considering label
+
+ protected:
+  shared_ptr<Caffe::RNG> prefetch_rng_;
+  virtual void ShuffleImages();
+  virtual void load_batch(LabelmapBatch<Dtype>* batch);
+
+  vector<std::pair<std::string, std::string> > lines_;
+  int lines_id_;
+};
+template <typename Dtype>
+class ImageMultLabelDataLayer : public BasePrefetchingLabelmapDataLayer<Dtype> {
+ public:
+  explicit ImageMultLabelDataLayer(const LayerParameter& param)
+      : BasePrefetchingLabelmapDataLayer<Dtype>(param) {}
+  virtual ~ImageMultLabelDataLayer();
+  virtual void DataLayerSetUp(const vector<Blob<Dtype>*>& bottom,
+      const vector<Blob<Dtype>*>& top);
+
+  virtual inline const char* type() const { return "ImageLabelmapData"; }
+  virtual inline int ExactNumBottomBlobs() const { return 0; }
+  virtual inline int ExactNumTopBlobs() const { return 2; } //could be three if considering label
+
+ protected:
+  shared_ptr<Caffe::RNG> prefetch_rng_;
+  virtual void ShuffleImages();
+  virtual void load_batch(LabelmapBatch<Dtype>* batch);
+
+  vector<std::pair<std::string, std::string> > lines_;
+  int lines_id_;
+};
+/**
  * @brief Provides data to the Net from memory.
  *
  * TODO(dox): thorough documentation for Forward and proto params.
@@ -277,10 +359,8 @@ class MemoryDataLayer : public BaseDataLayer<Dtype> {
   virtual inline int ExactNumTopBlobs() const { return 2; }
 
   virtual void AddDatumVector(const vector<Datum>& datum_vector);
-#ifdef USE_OPENCV
   virtual void AddMatVector(const vector<cv::Mat>& mat_vector,
       const vector<int>& labels);
-#endif  // USE_OPENCV
 
   // Reset should accept const pointers, but can't, because the memory
   //  will be given to Blob, which is mutable

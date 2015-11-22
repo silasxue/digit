@@ -1,7 +1,8 @@
 #include <algorithm>
 #include <vector>
 
-#include "caffe/neuron_layers.hpp"
+#include "caffe/layer.hpp"
+#include "caffe/vision_layers.hpp"
 
 namespace caffe {
 
@@ -16,6 +17,7 @@ void ReLULayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
     top_data[i] = std::max(bottom_data[i], Dtype(0))
         + negative_slope * std::min(bottom_data[i], Dtype(0));
   }
+
 }
 
 template <typename Dtype>
@@ -34,8 +36,6 @@ void ReLULayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
     }
   }
 }
-
-
 #ifdef CPU_ONLY
 STUB_GPU(ReLULayer);
 #endif

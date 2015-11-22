@@ -3,7 +3,11 @@
 #endif
 #include <glog/logging.h>
 #include <stdio.h>
+#include <sys/ioctl.h>
+#include <sys/mman.h>
+#include <sys/stat.h>
 
+#include <cstdlib>
 #include <sstream>
 #include <string>
 #include <vector>

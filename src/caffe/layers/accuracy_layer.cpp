@@ -1,9 +1,13 @@
+#include <algorithm>
 #include <functional>
 #include <utility>
 #include <vector>
-#include <set>
-#include "caffe/loss_layers.hpp"
+
+#include "caffe/layer.hpp"
+#include "caffe/util/io.hpp"
 #include "caffe/util/math_functions.hpp"
+#include "caffe/vision_layers.hpp"
+
 namespace caffe {
 
 template <typename Dtype>
@@ -17,6 +21,7 @@ void AccuracyLayer<Dtype>::LayerSetUp(
     ignore_label_ = this->layer_param_.accuracy_param().ignore_label();
   }
 }
+
 template <typename Dtype>
 void AccuracyLayer<Dtype>::Reshape(
   const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) {
@@ -50,17 +55,6 @@ void AccuracyLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
   const Dtype* bottom_label = bottom[1]->cpu_data();
   const int dim = bottom[0]->count() / outer_num_;
   const int num_labels = bottom[0]->shape(label_axis_);
-  /*
-  set<Dtype> s;
-  vector<Dtype> v;
-  for(int i = 0;i < bottom[0]->count();++i) {
-    if(s.find(bottom_data[i]) == s.end()){
-      s.insert(bottom_data[i]);
-      v.push_back(bottom_data[i]);
-    }
-  }
-  */
-
   vector<Dtype> maxval(top_k_+1);
   vector<int> max_id(top_k_+1);
   if (top.size() > 1) {
