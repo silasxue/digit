@@ -14,21 +14,21 @@ from read_img import read_img_cv2
 NUM_IDX_DIGITS = 10
 IDX_FMT = '{:0>%d' % NUM_IDX_DIGITS + 'd}'
 CAFFE_ROOT = '../../'
-phase = 'trainval'
+phase = 'test'
 sys.path.insert(0, CAFFE_ROOT + 'python/')
 print os.listdir(CAFFE_ROOT + 'python')
 import caffe
-src_dir = CAFFE_ROOT+'data/fcn/'
+
 dst_dir = './'
-lmimgDst   = dst_dir + phase +'_imgs_lmdb/'
-lmlabelDst = dst_dir + phase + '_labels_lmdb/'
+lmimgDst   = dst_dir + phase +'_imgs_lmdb_small/'
+lmlabelDst = dst_dir + phase + '_labels_lmdb_small/'
 
 
 def main(args):
-	dir_imgs = CAFFE_ROOT+'data/fcn/' + phase + '_jpg'
+	dir_imgs = CAFFE_ROOT+'data/fcn_small/' + phase + '_jpg'
 	paths_imgs = fs.gen_paths(dir_imgs, fs.filter_is_img)
 
-	dir_segm_labels = CAFFE_ROOT + 'data/fcn/' + phase + '_maps'
+	dir_segm_labels = CAFFE_ROOT + 'data/fcn_small/' + phase + '_maps1'
 	paths_segm_labels = fs.gen_paths(dir_segm_labels)
 
 	paths_pairs = fs.fname_pairs(paths_imgs, paths_segm_labels)    
@@ -41,7 +41,7 @@ def main(args):
 		os.makedirs(lmlabelDst)
 
 	size1 = imgs_to_lmdb(paths_imgs, lmimgDst, CAFFE_ROOT = CAFFE_ROOT)
-	size2 = matfiles_to_lmdb(paths_segm_labels, lmlabelDst, 'gt_pad',CAFFE_ROOT = CAFFE_ROOT)
+	size2 = matfiles_to_lmdb(paths_segm_labels, lmlabelDst, 'gt',CAFFE_ROOT = CAFFE_ROOT)
 	dif = size1 - size2
 	dif = dif.sum()
 	scipy.io.savemat('./size1',dict({'sz':size1}),appendmat=True)

@@ -1,70 +1,11 @@
 name: "FCN"
-layer {
-  name: "data"
-  type: "Data"
-  top: "data"
-  include {
-    phase: TRAIN
-  }
-  transform_param {
-#    mean_value: 104.00699
-#    mean_value: 116.66877
-#    mean_value: 122.67892
-  }
-  data_param {
-    source: "./trainval_imgs_lmdb_small"
-#    source: "./trainval_imgs_lmdb"
-    batch_size: 1
-    backend: LMDB
-  }
-}
-layer {
-  name: "label"
-  type: "Data"
-  top: "label"
-  include {
-    phase: TRAIN
-  }
-  data_param {
-    source: "./trainval_labels_lmdb_small"
-#    source: "./trainval_labels_lmdb"
-    batch_size: 1
-    backend: LMDB
-  }
-}
-layer {
-  name: "data"
-  type: "Data"
-  top: "data"
-  include {
-    phase: TEST
-  }
-  transform_param {
-#    mean_value: 104.00699
-#    mean_value: 116.66877
-#    mean_value: 122.67892
-  }
-  data_param {
-    source: "./test_imgs_lmdb_small"
-#    source: "./test_imgs_lmdb"
-    batch_size: 1
-    backend: LMDB
-  }
-}
-layer {
-  name: "label"
-  type: "Data"
-  top: "label"
-  include {
-    phase: TEST
-  }
-  data_param {
-   source: "./test_labels_lmdb_small"
-#    source: "./test_labels_lmdb"
-    batch_size: 1
-    backend: LMDB
-  }
-}
+
+input: "data"
+input_dim: 1
+input_dim: 3
+input_dim: 500
+input_dim: 500
+
 layer {
   name: "conv1_1"
   type: "Convolution"
@@ -420,14 +361,9 @@ layer {
   bottom: "upscore_new" 
   bottom: "data" 
 }
-
-layer { 
-  type: "SoftmaxWithLoss"
-  name: "loss" 
-  top: "loss"
+layer {
+  type: "Softmax"
+  name: "score_1"
+  top: "score_1"
   bottom: "score" 
-  bottom: "label"
-  loss_param {
-    normalize: false
-  }
- }
+}
