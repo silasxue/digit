@@ -13,40 +13,47 @@ import lmdb
 from read_img import read_img_cv2
 NUM_IDX_DIGITS = 10
 IDX_FMT = '{:0>%d' % NUM_IDX_DIGITS + 'd}'
+#options
 CAFFE_ROOT = '../../'
-phase = 'test'
+phase = 'train'
+
 sys.path.insert(0, CAFFE_ROOT + 'python/')
 print os.listdir(CAFFE_ROOT + 'python')
 import caffe
 
-dst_dir = './'
-lmimgDst   = dst_dir + phase +'_imgs_lmdb_small/'
-lmlabelDst = dst_dir + phase + '_labels_lmdb_small/'
+#source data directory
+data_dir = CAFFE_ROOT+'data/fcn_label/'
+
+#lmdb destination: in which directory to save lmdb
+lmdb_dst   = data_dir + 'lmdb/'
 
 
 def main(args):
-	dir_imgs = CAFFE_ROOT+'data/fcn_small/' + phase + '_jpg'
-	paths_imgs = fs.gen_paths(dir_imgs, fs.filter_is_img)
-
-	dir_segm_labels = CAFFE_ROOT + 'data/fcn_small/' + phase + '_maps1'
-	paths_segm_labels = fs.gen_paths(dir_segm_labels)
-
-	paths_pairs = fs.fname_pairs(paths_imgs, paths_segm_labels)    
-	paths_imgs, paths_segm_labels = map(list, zip(*paths_pairs))
-	if not os.path.exists(lmimgDst):
+	imgs_dir = data_dir + phase + '_img'
+	paths_imgs = fs.gen_paths(imgs_dir, fs.filter_is_img)
+	gt_dir = data_dir + phase + '_gt'
+	paths_gt = fs.gen_paths(gt_dir)
+	paths_pairs = fs.fname_pairs(paths_imgs, paths_gt)    
+	paths_imgs, paths_gt = map(list, zip(*paths_pairs))
+	
+	lm_img_dst = lmdb_dst + phase + '_img_lmdb'
+	lm_gt_dst  = lmdb_dst + phase + '_gt_lmdb'
+	if not os.path.exists(lm_img_dst):
 		print 'lmdb dir not exists,make it'
-		os.makedirs(lmimgDst)
-	if not os.path.exists(lmlabelDst):
+		os.makedirs(lm_img_dst)
+	if not os.path.exists(lm_gt_dst):
 		print 'lmdb dir not exists,make it'
-		os.makedirs(lmlabelDst)
+		os.makedirs(lm_gt_dst)
 
-	size1 = imgs_to_lmdb(paths_imgs, lmimgDst, CAFFE_ROOT = CAFFE_ROOT)
-	size2 = matfiles_to_lmdb(paths_segm_labels, lmlabelDst, 'gt',CAFFE_ROOT = CAFFE_ROOT)
+	size1 = imgs_to_lmdb(paths_imgs, lm_img_dst, CAFFE_ROOT = CAFFE_ROOT)
+	size2 = matfiles_to_lmdb(paths_gt, lm_gt_dst, 'gt',CAFFE_ROOT = CAFFE_ROOT)
 	dif = size1 - size2
 	dif = dif.sum()
-	scipy.io.savemat('./size1',dict({'sz':size1}),appendmat=True)
-	scipy.io.savemat('./size2',dict({'sz':size2}),appendmat=True)
-	print 'size dif:'+str(dif)
+	#scipy.io.savemat('./size1',dict({'sz':size1}),appendmat=True)
+	#scipy.io.savemat('./size2',dict({'sz':size2}),appendmat=True)
+	if(dif != 0):
+        print 'ERROR: img-gt size not match!'
+        return 1;
 	return 0
 
 def imgs_to_lmdb(paths_src, path_dst, CAFFE_ROOT=None):
