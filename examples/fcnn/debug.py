@@ -4,7 +4,7 @@ import sys
 sys.path.insert(0, caffe_root + 'python')
 import caffe
 import numpy as np
-
+import matplotlib.pyplot as plt
 # make a bilinear interpolation kernel
 # credit @longjon
 def upsample_filt(size):
@@ -45,5 +45,7 @@ net = solver.net
 # do net surgery to set the deconvolution weights for bilinear interpolation
 interp_layers = [k for k in solver.net.params.keys() if 'up' in k]
 interp_surgery(solver.net, interp_layers)
+solver.step(20)
 params = net.params
 blobs = net.blobs
+data = blobs['data'].data

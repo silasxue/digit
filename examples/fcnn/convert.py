@@ -22,7 +22,7 @@ print os.listdir(CAFFE_ROOT + 'python')
 import caffe
 
 #source data directory
-data_dir = CAFFE_ROOT+'data/fcn_label/'
+data_dir = CAFFE_ROOT+'data/fcn_small/'
 
 #lmdb destination: in which directory to save lmdb
 lmdb_dst   = data_dir + 'lmdb/'
@@ -52,8 +52,8 @@ def main(args):
 	#scipy.io.savemat('./size1',dict({'sz':size1}),appendmat=True)
 	#scipy.io.savemat('./size2',dict({'sz':size2}),appendmat=True)
 	if(dif != 0):
-        print 'ERROR: img-gt size not match!'
-        return 1;
+         print 'ERROR: img-gt size not match! diff:'+str(diff)
+         return 1
 	return 0
 
 def imgs_to_lmdb(paths_src, path_dst, CAFFE_ROOT=None):
@@ -84,12 +84,6 @@ def imgs_to_lmdb(paths_src, path_dst, CAFFE_ROOT=None):
 def matfiles_to_lmdb(paths_src, path_dst, fieldname,
                      CAFFE_ROOT=None,
                      lut=None):
-    '''
-    Generate LMDB file from set of images
-    Source: https://github.com/BVLC/caffe/issues/1698#issuecomment-70211045
-    credit: Evan Shelhamer
-    
-    '''
     if CAFFE_ROOT is not None:
         import sys
         sys.path.insert(0,  os.path.join(CAFFE_ROOT, 'python'))

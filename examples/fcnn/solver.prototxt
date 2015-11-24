@@ -1,4 +1,4 @@
-net: "fcn11.prototxt"
+net: "fcn2.prototxt"
 test_iter: 200
 # make test net, but don't invoke it from the solver itself
 test_interval: 10000
@@ -14,5 +14,5 @@ iter_size: 5
 max_iter: 80000
 weight_decay: 0.0005
 snapshot: 5000
-snapshot_prefix: "./models/fcn11/fcn"
+snapshot_prefix: "./models/fcn2/fcn"
 test_initialization: false
