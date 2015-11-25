@@ -1,8 +1,8 @@
 
 caffe_root = '../../';
 addpath(genpath([caffe_root,'matlab/']));
-im = imread('test2.jpg');
-%im = zeros([50, 150, 3], 'uint8');
+%im = imread('test2.jpg');
+im = zeros([50, 150, 3], 'uint8');
 use_gpu = 1;
 
 % Set caffe mode
@@ -17,7 +17,7 @@ end
 model_dir = './';
 %model_dir = '../../examples/finetune/';
 net_model = [model_dir 'fcn2_deploy.prototxt'];
-net_weights = [model_dir 'models/fcn2/fcn_small_iter_80000.caffemodel'];
+net_weights = [model_dir 'models/fcn2/fcn_iter_5000.caffemodel'];
 phase = 'test'; % run with phase test (so that dropout isn't applied)
 if ~exist(net_weights, 'file')
   error('Please download CaffeNet from Model Zoo before you run this demo');

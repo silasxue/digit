@@ -318,10 +318,14 @@ layer {
     weight_filler {
       type: "xavier"
     }
+    bias_filler {
+      type: 'constant'
+      value: 0
+    }
   }
 }
 layer {
-  name: "relu6"
+  name: "relu4"
   type: "ReLU"
   bottom: "score4"
   top: "score4"
@@ -347,10 +351,14 @@ layer {
     weight_filler {
       type: "xavier"
     }
+    bias_filler {
+      type: 'constant'
+      value: 0
+    }
   }
 }
 layer {
-  name: "relu7"
+  name: "relu5"
   type: "ReLU"
   bottom: "score5"
   top: "score5"
@@ -383,15 +391,12 @@ layer {
   }
 }
 layer {
-  name: "upscore_new"
+  name: "upscore1"
   type: "Deconvolution"
   bottom: "score6"
-  top: "upscore_new"
+  top: "upscore"
   param {
-    lr_mult: 0
-  }
-  param {
-    lr_mult: 0
+    lr_mult: 1
   }
   convolution_param {
     num_output: 2
@@ -404,7 +409,7 @@ layer {
   type: "Crop" 
   name: "score"
   top: "score"
-  bottom: "upscore_new" 
+  bottom: "upscore" 
   bottom: "data" 
 }
 
