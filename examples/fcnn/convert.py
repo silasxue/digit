@@ -18,7 +18,6 @@ CAFFE_ROOT = '../../'
 phase = 'train'
 
 sys.path.insert(0, CAFFE_ROOT + 'python/')
-print os.listdir(CAFFE_ROOT + 'python')
 import caffe
 
 #source data directory
@@ -30,11 +29,11 @@ lmdb_dst   = data_dir + 'lmdb/'
 
 def main(args):
 	imgs_dir = data_dir + phase + '_img'
-	paths_imgs = fs.gen_paths(imgs_dir, fs.filter_is_img)
 	gt_dir = data_dir + phase + '_gt'
+    paths_imgs = fs.gen_paths(imgs_dir, fs.filter_is_img)
 	paths_gt = fs.gen_paths(gt_dir)
 	paths_pairs = fs.fname_pairs(paths_imgs, paths_gt)    
-	paths_imgs, paths_gt = map(list, zip(*paths_pairs))
+    paths_imgs, paths_gt = map(list, zip(*paths_pairs))
 	
 	lm_img_dst = lmdb_dst + phase + '_img_lmdb'
 	lm_gt_dst  = lmdb_dst + phase + '_gt_lmdb'

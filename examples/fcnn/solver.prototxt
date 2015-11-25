@@ -1,19 +1,19 @@
+#net: "train_val.prototxt"
 net: "fcn2.prototxt"
 test_iter: 200
 # make test net, but don't invoke it from the solver itself
 test_interval: 10000
 display: 20
 average_loss: 20
-base_lr: 1e-9
-lr_policy: "step"
-stepsize: 2500
-gamma: 0.5
-
+# lr for unnormalized softmax -- see train_val definition
+base_lr: 1e-10
+lr_policy: "fixed"
+# high momentum
 momentum: 0.99
 # no gradient accumulation
 iter_size: 5
 max_iter: 80000
 weight_decay: 0.0005
-snapshot: 5000
-snapshot_prefix: "./models/fcn2/fcn"
+snapshot: 2000
+snapshot_prefix: "models/fcn2/fcn2"
 test_initialization: false

@@ -1,8 +1,9 @@
-
+clear;close;clc;
 caffe_root = '../../';
 addpath(genpath([caffe_root,'matlab/']));
 im = imread('test1.jpg');
-use_gpu = 1;
+% use_gpu = 1;
+use_gpu = 0;
 
 % Set caffe mode
 if exist('use_gpu', 'var') && use_gpu
@@ -15,8 +16,8 @@ end
 
 model_dir = './';
 %model_dir = '../../examples/finetune/';
-net_model = [model_dir 'fcn1_deploy.prototxt'];
-net_weights = [model_dir 'fcn_small_iter_48000.caffemodel'];
+net_model = [model_dir 'fcn2_deploy.prototxt'];
+net_weights = [model_dir 'fcn2_iter_2000.caffemodel'];
 phase = 'test'; % run with phase test (so that dropout isn't applied)
 if ~exist(net_weights, 'file')
   error('Please download CaffeNet from Model Zoo before you run this demo');
@@ -24,6 +25,9 @@ end
 
 % Initialize a network
 net = caffe.Net(net_model, net_weights, phase);
+
+
+
 siz=size(im);
 blobdata = net.blob_vec(net.name2blob_index('data'));
 oldshape=blobdata.shape;
@@ -42,14 +46,16 @@ tic;
 scores = net.forward({im_data});
 toc;
 
-score_map = scores{1}(:,:,2)'; score_map(score_map < 0.5) = 0;
+score_map = scores{1}(:,:,2)'; 
+score_map = score_map/max(score_map(:));
+score_map(score_map < 0.5) = 0;
 [b, b1] = bwlabeln(logical(score_map), 4);
 segs_id = unique(b);
 
 figure(1); nignore = 0;
 for i = 1:length(segs_id)
    ind = find(b == segs_id(i));
-   if(length(y) < numel(score_map) / 200)
+   if(length(ind) < numel(score_map) / 200)
       b1 = b1 - 1;
       b(ind) = 0;
       score_map(ind) = 0;
