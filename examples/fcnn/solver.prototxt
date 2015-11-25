@@ -6,7 +6,7 @@ test_interval: 10000
 display: 20
 average_loss: 20
 # lr for unnormalized softmax -- see train_val definition
-base_lr: 1e-10
+base_lr: 1e-6
 lr_policy: "fixed"
 # high momentum
 momentum: 0.99
