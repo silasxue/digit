@@ -298,7 +298,6 @@ layer {
     stride: 2
   }
 }
-
 layer {
   name: "score4"
   type: "Convolution"
@@ -318,80 +317,6 @@ layer {
     engine: CAFFE
   }
 }
-#layer {
-#  name: "relu6"
-#  type: "ReLU"
-#  bottom: "score4"
-#  top: "score4"
-#}
-#layer {
-#  name: "drop6"
-#  type: "Dropout"
-#  bottom: "fc6"
-#  top: "fc6"
-#  dropout_param {
-#    dropout_ratio: 0.5
-#  }
-#}
-#layer {
-#  name: "score5"
-#  type: "Convolution"
-#  bottom: "score4"
-#  top: "score5"
-#  param {
-#    lr_mult: 1
-#    decay_mult: 1
-#  }
-#  param {
-#    lr_mult: 2
-#    decay_mult: 0
-#  }
-#  convolution_param {
-#    num_output: 256
-#    kernel_size: 1
-#    engine: CAFFE
-#    weight_filler {
-#      type: "xavier"
-#    }
-#  }
-#}
-#layer {
-#  name: "relu7"
-#  type: "ReLU"
-#  bottom: "score5"
-#  top: "score5"
-#}
-#layer {
-#  name: "drop7"
-#  type: "Dropout"
-#  bottom: "fc7"
-#  top: "fc7"
-#  dropout_param {
-#    dropout_ratio: 0.5
-#  }
-#}
-#layer {
-#  name: "score6"
-#  type: "Convolution"
-#  bottom: "score5"
-#  top: "score6"
-#  param {
-#    lr_mult: 1
-#    decay_mult: 1
-#  }
-#  param {
-#    lr_mult: 2
-#    decay_mult: 0
-#  }
-#  convolution_param {
-#    num_output: 2
-#    kernel_size: 1
-#    engine: CAFFE
-#    weight_filler {
-#      type: "xavier"
-#    }
-#  }
-#}
 layer {
   name: "upscore_new"
   type: "Deconvolution"
@@ -407,12 +332,12 @@ layer {
     stride: 8
   }
 }
-layer { 
-  type: "Crop" 
+layer {
+  type: "Crop"
   name: "score"
   top: "score"
   bottom: "upscore_new" 
-  bottom: "data" 
+  bottom: "data"
 }
 
 layer { 

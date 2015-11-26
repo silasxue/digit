@@ -1,7 +1,6 @@
 
 caffe_root = '../../';
 addpath(genpath([caffe_root,'matlab/']));
-im = imread('test1.jpg');
 use_gpu = 1;
 
 % Set caffe mode
@@ -12,40 +11,42 @@ if exist('use_gpu', 'var') && use_gpu
 else
   caffe.set_mode_cpu();
 end
-
+test_imgs_dir = '../../data/figure/';
 model_dir = './';
 %model_dir = '../../examples/finetune/';
 net_model = [model_dir 'fcn11_deploy.prototxt'];
-net_weights = [model_dir 'models/fcn11/fcn_iter_35000.caffemodel'];
+net_weights = [model_dir 'models/fcn11/fcn11_iter_5000.caffemodel'];
 phase = 'test'; % run with phase test (so that dropout isn't applied)
 if ~exist(net_weights, 'file')
   error('Please download CaffeNet from Model Zoo before you run this demo');
 end
-
 % Initialize a network
 net = caffe.Net(net_model, net_weights, phase);
-siz=size(im);
-blobdata = net.blob_vec(net.name2blob_index('data'));
-oldshape=blobdata.shape;
-newshape=[siz(2),siz(1),oldshape(3),oldshape(4)];
-blobdata.reshape(newshape);
+%get data
+test_imgs = dir([test_imgs_dir,'*.jpg']);
+test_imgs = {test_imgs.name};
+for i = 1:length(test_imgs),test_imgs{i} = test_imgs{i}(1:end-4);end
 
-mean_data = [104.00698793,116.66876762,122.67891434];
-im_data = im(:, :, [3, 2, 1]);  % permute channels from RGB to BGR
-im_data = permute(im_data, [2, 1, 3]);  % flip width and height
-im_data = single(im_data);  % convert from uint8 to single
-mean_data = repmat(mean_data, [size(im_data, 1) * size(im_data, 2), 1]);
-mean_data = reshape(mean_data, size(im_data));
-im_data = im_data - mean_data;
+for i = 1:length(test_imgs)
+    im = imread([test_imgs_dir,test_imgs{i},'.jpg']);
+    siz=size(im);
+    blobdata = net.blob_vec(net.name2blob_index('data'));
+    oldshape=blobdata.shape;
+    newshape=[siz(2),siz(1),oldshape(3),oldshape(4)];
+    blobdata.reshape(newshape);
 
-tic;
-scores = net.forward({im_data});
-toc;
+    im_data = im(:, :, [3, 2, 1]);   % permute channels from RGB to BGR
+    im_data = permute(im_data, [2, 1, 3]);  % flip width and height
+    im_data = single(im_data);       % convert from uint8 to single
 
-s = scores{1};
-figure(1);
-subplot(3, 4, 1); imshow(im);
-for i = 1:10
-   subplot(3, 4, i+1);imshow(s(:,:,i)') 
+    scores = net.forward({im_data});
+    s = scores{1};
+    figure(1);
+    subplot(3, 4, 1); imshow(im);
+    for j = 1:10
+       subplot(3, 4, j+1);imshow(s(:,:,j)') 
+    end
 end
+
+
 caffe.reset_all();

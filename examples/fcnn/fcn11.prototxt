@@ -12,7 +12,7 @@ layer {
 #    mean_value: 122.67892
   }
   data_param {
-    source: "../../data/fcn_label/lmdb/train_img_lmdb"
+    source: "../../data/fcn11/lmdb/train_img_lmdb"
     batch_size: 1
     backend: LMDB
   }
@@ -25,7 +25,7 @@ layer {
     phase: TRAIN
   }
   data_param {
-    source: "../../data/fcn_label/lmdb/train_gt_lmdb"
+    source: "../../data/fcn11/lmdb/train_gt_lmdb"
     batch_size: 1
     backend: LMDB
   }
@@ -43,7 +43,7 @@ layer {
 #    mean_value: 122.67892
   }
   data_param {
-    source: "../../data/fcn_label/lmdb/test_img_lmdb"
+    source: "../../data/fcn11/lmdb/test_img_lmdb"
     batch_size: 1
     backend: LMDB
   }
@@ -56,11 +56,12 @@ layer {
     phase: TEST
   }
   data_param {
-    source: "../../data/fcn_label/lmdb/test_gt_lmdb"
+    source: "../../data/fcn11/lmdb/test_gt_lmdb"
     batch_size: 1
     backend: LMDB
   }
 }
+###########################################################
 layer {
   name: "conv1_1"
   type: "Convolution"
@@ -297,99 +298,29 @@ layer {
     stride: 2
   }
 }
-
 layer {
   name: "score4"
   type: "Convolution"
   bottom: "pool3"
   top: "score4"
   param {
-    lr_mult: 1
+    lr_mult: 0.01
     decay_mult: 1
   }
   param {
-    lr_mult: 2
-    decay_mult: 0
-  }
-  convolution_param {
-    num_output: 256
-    kernel_size: 3
-    engine: CAFFE
-    weight_filler {
-      type: "xavier"
-    }
-  }
-}
-layer {
-  name: "relu6"
-  type: "ReLU"
-  bottom: "score4"
-  top: "score4"
-}
-#layer {
-#  name: "drop6"
-#  type: "Dropout"
-#  bottom: "fc6"
-#  top: "fc6"
-#  dropout_param {
-#    dropout_ratio: 0.5
-#  }
-#}
-layer {
-  name: "score5"
-  type: "Convolution"
-  bottom: "score4"
-  top: "score5"
-  param {
-    lr_mult: 1
-    decay_mult: 1
-  }
-  param {
-    lr_mult: 2
-    decay_mult: 0
-  }
-  convolution_param {
-    num_output: 256
-    kernel_size: 1
-    engine: CAFFE
-    weight_filler {
-      type: "xavier"
-    }
-  }
-}
-layer {
-  name: "relu7"
-  type: "ReLU"
-  bottom: "score5"
-  top: "score5"
-}
-
-layer {
-  name: "score6"
-  type: "Convolution"
-  bottom: "score5"
-  top: "score6"
-  param {
-    lr_mult: 1
-    decay_mult: 1
-  }
-  param {
-    lr_mult: 2
+    lr_mult: 0.02
     decay_mult: 0
   }
   convolution_param {
     num_output: 11
     kernel_size: 1
     engine: CAFFE
-    weight_filler {
-      type: "xavier"
-    }
   }
 }
 layer {
   name: "upscore_new"
   type: "Deconvolution"
-  bottom: "score6"
+  bottom: "score4"
   top: "upscore_new"
   param {
     lr_mult: 0
@@ -401,12 +332,12 @@ layer {
     stride: 8
   }
 }
-layer { 
-  type: "Crop" 
+layer {
+  type: "Crop"
   name: "score"
   top: "score"
   bottom: "upscore_new" 
-  bottom: "data" 
+  bottom: "data"
 }
 
 layer { 
