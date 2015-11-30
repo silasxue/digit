@@ -61,7 +61,6 @@ layer {
     backend: LMDB
   }
 }
-###########################################################
 layer {
   name: "conv1_1"
   type: "Convolution"
