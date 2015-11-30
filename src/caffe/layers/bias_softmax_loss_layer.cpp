@@ -12,7 +12,7 @@ void BiasSoftmaxWithLossLayer<Dtype>::LayerSetUp(
     const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) {
   LossLayer<Dtype>::LayerSetUp(bottom, top);
   LayerParameter softmax_param(this->layer_param_);
-  softmax_param.set_type("Softmax");
+  softmax_param.set_type("BiasSoftmax");
   softmax_layer_ = LayerRegistry<Dtype>::CreateLayer(softmax_param);
   softmax_bottom_vec_.clear();
   softmax_bottom_vec_.push_back(bottom[0]);
@@ -58,16 +58,14 @@ void BiasSoftmaxWithLossLayer<Dtype>::Forward_cpu(
   const Dtype* prob_data = prob_.cpu_data();
   const Dtype* label = bottom[1]->cpu_data();
   int dim = prob_.count() / outer_num_;
-  int count = 0;
-  int count_pos = 0;
-  int count_neg = 0;
+  int count = 0, count_pos = 0, count_neg = 0;
   Dtype loss = 0;
   //pos/neg loss for single image
   Dtype temp_loss_neg = 0; 
   Dtype temp_loss_pos = 0;
   //pos/neg loss for a batch
-  Dtype loss_pos;
-  Dtype loss_neg;
+  Dtype loss_pos = 0;
+  Dtype loss_neg = 0;
   for (int i = 0; i < outer_num_; ++i) {
     for (int j = 0; j < inner_num_; j++) {
       const int label_value = static_cast<int>(label[i * inner_num_ + j]);
@@ -90,8 +88,7 @@ void BiasSoftmaxWithLossLayer<Dtype>::Forward_cpu(
     loss_pos += temp_loss_pos;
   }
   count = count_pos + count_neg;
-  loss += count_neg / (count) * loss_pos;
-  loss += count_pos / (count) * loss_neg;
+  loss = loss_pos + loss_neg;
   if (normalize_) {
     top[0]->mutable_cpu_data()[0] = loss / count;
   } else {
@@ -115,8 +112,16 @@ void BiasSoftmaxWithLossLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& t
     caffe_copy(prob_.count(), prob_data, bottom_diff);
     const Dtype* label = bottom[1]->cpu_data();
     int dim = prob_.count() / outer_num_;
-    int count = 0;
+    int count_neg = 0, count_pos = 0, count = 0;
     for (int i = 0; i < outer_num_; ++i) {
+      for (int j = 0;j < inner_num_; ++j) {
+        if (label[i * inner_num_ + j] == neg_id)
+          count_neg++;
+        else
+          count_pos++;
+      }
+      int beta[2] = { count_pos / (count_pos + count_neg),\
+                      count_neg / (count_pos + count_neg) };
       for (int j = 0; j < inner_num_; ++j) {
         const int label_value = static_cast<int>(label[i * inner_num_ + j]);
         if (has_ignore_label_ && label_value == ignore_label_) {
@@ -124,11 +129,15 @@ void BiasSoftmaxWithLossLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& t
             bottom_diff[i * dim + c * inner_num_ + j] = 0;
           }
         } else {
-          bottom_diff[i * dim + label_value * inner_num_ + j] -= 1;
-          ++count;
+          for (int ch = 0; ch < bottom[0]->shape(softmax_axis_); ++ch) {
+            bottom_diff[i * dim + ch * inner_num_ + j] = 
+                  - ( beta[label_value != neg_id] * (label_value == ch) \
+                  - beta[label_value != neg_id] * bottom_diff[i * dim + ch * inner_num_ + j] );
+          }
         }
       }
     }
+    count = count_neg + count_pos;
     // Scale gradient
     const Dtype loss_weight = top[0]->cpu_diff()[0];
     if (normalize_) {
