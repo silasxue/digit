@@ -244,7 +244,7 @@ layer {
 }
 
 layer {
-  name: "score4"
+  name: "score1"
   type: "Convolution"
   bottom: "pool3"
   top: "score4"

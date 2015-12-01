@@ -4,7 +4,7 @@ display: 20
 average_loss: 20
 base_lr: 1e-7
 lr_policy: "step"
-gamma: 0.1
+gamma: 0.5
 stepsize: 5000
 # high momentum
 momentum: 0.99
