@@ -6,11 +6,6 @@ layer {
   include {
     phase: TRAIN
   }
-  transform_param {
-#    mean_value: 104.00699
-#    mean_value: 116.66877
-#    mean_value: 122.67892
-  }
   data_param {
     source: "../../data/fcn11/lmdb/train_img_lmdb"
     batch_size: 1
@@ -26,37 +21,6 @@ layer {
   }
   data_param {
     source: "../../data/fcn11/lmdb/train_gt_lmdb"
-    batch_size: 1
-    backend: LMDB
-  }
-}
-layer {
-  name: "data"
-  type: "Data"
-  top: "data"
-  include {
-    phase: TEST
-  }
-  transform_param {
-#    mean_value: 104.00699
-#    mean_value: 116.66877
-#    mean_value: 122.67892
-  }
-  data_param {
-    source: "../../data/fcn11/lmdb/test_img_lmdb"
-    batch_size: 1
-    backend: LMDB
-  }
-}
-layer {
-  name: "label"
-  type: "Data"
-  top: "label"
-  include {
-    phase: TEST
-  }
-  data_param {
-    source: "../../data/fcn11/lmdb/test_gt_lmdb"
     batch_size: 1
     backend: LMDB
   }
