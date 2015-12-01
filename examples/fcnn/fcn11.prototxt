@@ -305,11 +305,11 @@ layer {
 
 layer { 
   type: "SoftmaxWithLoss"
-  name: "loss" 
+  name: "loss"
   top: "loss"
   bottom: "score" 
   bottom: "label"
   loss_param {
-    normalize: false
+    normalize: true
   }
  }
