@@ -28,32 +28,32 @@ lmdb_dst   = data_dir + 'lmdb/'
 
 
 def main(args):
-	imgs_dir = data_dir + phase + '_img'
-	gt_dir = data_dir + phase + '_gt'
+    imgs_dir = data_dir + phase + '_img'
+    gt_dir = data_dir + phase + '_gt'
     paths_imgs = fs.gen_paths(imgs_dir, fs.filter_is_img)
-	paths_gt = fs.gen_paths(gt_dir)
-	paths_pairs = fs.fname_pairs(paths_imgs, paths_gt)    
+    paths_gt = fs.gen_paths(gt_dir)
+    paths_pairs = fs.fname_pairs(paths_imgs, paths_gt)    
     paths_imgs, paths_gt = map(list, zip(*paths_pairs))
-	
-	lm_img_dst = lmdb_dst + phase + '_img_lmdb'
-	lm_gt_dst  = lmdb_dst + phase + '_gt_lmdb'
-	if not os.path.exists(lm_img_dst):
-		print 'lmdb dir not exists,make it'
-		os.makedirs(lm_img_dst)
-	if not os.path.exists(lm_gt_dst):
-		print 'lmdb dir not exists,make it'
-		os.makedirs(lm_gt_dst)
 
-	size1 = imgs_to_lmdb(paths_imgs, lm_img_dst, CAFFE_ROOT = CAFFE_ROOT)
-	size2 = matfiles_to_lmdb(paths_gt, lm_gt_dst, 'gt',CAFFE_ROOT = CAFFE_ROOT)
-	dif = size1 - size2
-	dif = dif.sum()
-	#scipy.io.savemat('./size1',dict({'sz':size1}),appendmat=True)
-	#scipy.io.savemat('./size2',dict({'sz':size2}),appendmat=True)
-	if(dif != 0):
+    lm_img_dst = lmdb_dst + phase + '_img_lmdb'
+    lm_gt_dst  = lmdb_dst + phase + '_gt_lmdb'
+    if not os.path.exists(lm_img_dst):
+        print 'lmdb dir not exists,make it'
+        os.makedirs(lm_img_dst)
+    if not os.path.exists(lm_gt_dst):
+        print 'lmdb dir not exists,make it'
+        os.makedirs(lm_gt_dst)
+
+    size1 = imgs_to_lmdb(paths_imgs, lm_img_dst, CAFFE_ROOT = CAFFE_ROOT)
+    size2 = matfiles_to_lmdb(paths_gt, lm_gt_dst, 'gt',CAFFE_ROOT = CAFFE_ROOT)
+    dif = size1 - size2
+    dif = dif.sum()
+    #scipy.io.savemat('./size1',dict({'sz':size1}),appendmat=True)
+    #scipy.io.savemat('./size2',dict({'sz':size2}),appendmat=True)
+    if(dif != 0):
          print 'ERROR: img-gt size not match! diff:'+str(diff)
          return 1
-	return 0
+    return 0
 
 def imgs_to_lmdb(paths_src, path_dst, CAFFE_ROOT=None):
     '''
